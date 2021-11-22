@@ -11,3 +11,6 @@ pom.xml
 .lein-plugins/
 .repl
 .nrepl-port
+.clj-condo/
+.lsp/
+.rebel_deadline_history
