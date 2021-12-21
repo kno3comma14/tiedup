@@ -1,12 +1,9 @@
 (ns tiedup.core
-    (:require 
-              [reagent.core :as reagent :refer [atom]]
+    (:require [reagent.core :as reagent :refer [atom]]
               [reagent.dom :as rd]
               [clojure.string :as string]))
 
 (enable-console-print!)
-
-(println "This text is printed from src/tiedup/core.cljs. Go ahead and edit it and see reloading in action.")
 
 (def available-characters (vec "abcdefghijklmnopqrstuvwxyz"))
 (def number-of-characters (count available-characters))
@@ -58,13 +55,29 @@
 (defn character-change-button
   [operation component k]
   (let [operation-symbol (if (= operation +) "+" "-")]
-    [:input {:type "button"
-             :value operation-symbol
-             :on-click #(generate-new-character component operation k)}]))
+    [:button {:type "button"
+              :style {:width "50px"}
+              :on-click #(generate-new-character component operation k)}
+     operation-symbol]))
+
+(defn update-game-state
+  []
+  (swap! app-state assoc :actual-pair-index (+ (:actual-pair-index @app-state) 1))
+  (js/alert "You guessed one word. Good job!"))
 
 (defn character-box
   [value]
-  [:input {:type "text" :value value}])
+  [:input {:style {:width "42px" :text-align "center"}
+           :type "text" 
+           :value value
+           :readOnly true}])
+
+(defn character-component
+  [plus-button character minus-button]
+  [:tbody
+   [:tr [:td plus-button]]
+   [:tr [:td character]]
+   [:tr [:td minus-button]]])
 
 (defn left-word
   [left-word]
@@ -73,6 +86,16 @@
 (defn right-word
   [right-word]
   (prepare-right-word right-word))
+
+(defn verify-button
+  [first-letter second-letter third-letter pair]
+  [:input {:type "button"
+           :value "Verify!"
+           :on-click #(if (verify-answer first-letter second-letter third-letter pair)
+                        (if (= (- (count (get-pairs)) 1) (:actual-pair-index @app-state))
+                          (js/alert "Congratulations! You win!")
+                          (update-game-state))
+                        (js/alert "Keep trying!"))}])
 
 (defn create-board
   []
@@ -87,28 +110,14 @@
         third-letter-plus-button (character-change-button + third-letter :third-letter)
         pair (get (get-pairs) (:actual-pair-index @app-state))]
     [:div
-     (left-word (:left-word pair))
-     first-letter-minus-button
-     first-letter
-     first-letter-plus-button
-     second-letter-minus-button
-     second-letter
-     second-letter-plus-button
-     third-letter-minus-button
-     third-letter
-     third-letter-plus-button
-     (right-word (:right-word pair))
-     [:div
-      [:input {:type "button" 
-               :value "Verify!" 
-               :on-click #(if (verify-answer first-letter second-letter third-letter pair)
-                            (do
-                              (if (= (- (count (get-pairs)) 1) (:actual-pair-index @app-state))
-                                (js/alert "Congratulations! You win!")
-                                (do
-                                  (swap! app-state assoc :actual-pair-index (+ (:actual-pair-index @app-state) 1))
-                                  (js/alert "You guessed one word. Good job!"))))
-                            (js/alert "Keep trying!"))}]]]))
+     [:tbody
+      [:tr 
+       [:td (left-word (:left-word pair))]
+       [:td (character-component first-letter-plus-button first-letter first-letter-minus-button)]
+       [:td (character-component second-letter-plus-button second-letter second-letter-minus-button)]
+       [:td (character-component third-letter-plus-button third-letter third-letter-minus-button)]
+       [:td (right-word (:right-word pair))]]]
+     [:div (verify-button first-letter second-letter third-letter pair)]]))
 
 (rd/render [create-board]
            (. js/document (getElementById "app")))
