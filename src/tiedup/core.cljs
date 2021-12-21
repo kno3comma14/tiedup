@@ -5,8 +5,15 @@
 
 (enable-console-print!)
 
+(def application-name "app")
 (def available-characters (vec "abcdefghijklmnopqrstuvwxyz"))
 (def number-of-characters (count available-characters))
+(def congratulations-message "Congratulations! You win!")
+(def guessed-one-word-message "You guessed one word. Good job!")
+(def player-failed-message "Keep trying!")
+(def verify-button-value "Verify!")
+(def character-box-width "42px")
+(def operation-button-width "50px")
 
 (defn get-pairs
   "This will be replaced by rust wasm function"
@@ -56,18 +63,18 @@
   [operation component k]
   (let [operation-symbol (if (= operation +) "+" "-")]
     [:button {:type "button"
-              :style {:width "50px"}
+              :style {:width operation-button-width}
               :on-click #(generate-new-character component operation k)}
      operation-symbol]))
 
 (defn update-game-state
   []
   (swap! app-state assoc :actual-pair-index (+ (:actual-pair-index @app-state) 1))
-  (js/alert "You guessed one word. Good job!"))
+  (js/alert guessed-one-word-message))
 
 (defn character-box
   [value]
-  [:input {:style {:width "42px" :text-align "center"}
+  [:input {:style {:width character-box-width :text-align "center"}
            :type "text" 
            :value value
            :readOnly true}])
@@ -90,12 +97,12 @@
 (defn verify-button
   [first-letter second-letter third-letter pair]
   [:input {:type "button"
-           :value "Verify!"
+           :value verify-button-value
            :on-click #(if (verify-answer first-letter second-letter third-letter pair)
                         (if (= (- (count (get-pairs)) 1) (:actual-pair-index @app-state))
-                          (js/alert "Congratulations! You win!")
+                          (js/alert congratulations-message)
                           (update-game-state))
-                        (js/alert "Keep trying!"))}])
+                        (js/alert player-failed-message))}])
 
 (defn create-board
   []
@@ -120,7 +127,7 @@
      [:div (verify-button first-letter second-letter third-letter pair)]]))
 
 (rd/render [create-board]
-           (. js/document (getElementById "app")))
+           (. js/document (getElementById application-name)))
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
