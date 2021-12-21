@@ -14,3 +14,4 @@ pom.xml
 .clj-condo/
 .lsp/
 .rebel_deadline_history
+/.clj-kondo/
