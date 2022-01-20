@@ -118,7 +118,7 @@
         pair (get (get-pairs) (:actual-pair-index @app-state))]
     [:div
      [:tbody
-      [:tr 
+      [:tr
        [:td (left-word (:left-word pair))]
        [:td (character-component first-letter-plus-button first-letter first-letter-minus-button)]
        [:td (character-component second-letter-plus-button second-letter second-letter-minus-button)]
